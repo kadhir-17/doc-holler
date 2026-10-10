@@ -1,0 +1,80 @@
+name: Manual Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      host:
+        description: "Target IP address or domain"
+        required: true
+        type: string
+      username:
+        description: "SSH username (e.g. root, ubuntu, kadhir)"
+        required: true
+        default: "root"
+        type: string
+      ssh_port:
+        description: "SSH port"
+        required: false
+        default: "22"
+        type: string
+      deploy_path:
+        description: "Destination folder on target server"
+        required: false
+        default: "/opt/doc-holler"
+        type: string
+      ssh_password:
+        description: "SSH password (leave blank if using SSH_PRIVATE_KEY secret)"
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Execute deployment on remote host
+        env:
+          TARGET_HOST: ${{ inputs.host }}
+          TARGET_USER: ${{ inputs.username }}
+          TARGET_PORT: ${{ inputs.ssh_port }}
+          DEPLOY_PATH: ${{ inputs.deploy_path }}
+          SSH_PASS: ${{ inputs.ssh_password }}
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          OPENROUTER_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          if [ -n "$SSH_PASS" ]; then
+            echo "::add-mask::$SSH_PASS"
+            sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
+            SSH_CMD="sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no -p $TARGET_PORT"
+          elif [ -n "$SSH_KEY" ]; then
+            echo "$SSH_KEY" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            SSH_CMD="ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p $TARGET_PORT"
+          else
+            echo "Error: Neither SSH_PRIVATE_KEY secret nor ssh_password input was provided."
+            exit 1
+          fi
+
+          $SSH_CMD "$TARGET_USER@$TARGET_HOST" "
+            set -e
+            if [ ! -d '$DEPLOY_PATH' ]; then
+              git clone https://github.com/kadhir-17/doc-holler.git '$DEPLOY_PATH'
+            fi
+            cd '$DEPLOY_PATH'
+            git fetch origin main
+            git reset --hard origin/main
+            if [ -n '$OPENROUTER_KEY' ]; then
+              if [ ! -f .env ]; then
+                cp .env.example .env
+              fi
+              sed -i \"s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=$OPENROUTER_KEY|\" .env
+            fi
+            docker compose down || true
+            docker compose up --build -d
+          "
