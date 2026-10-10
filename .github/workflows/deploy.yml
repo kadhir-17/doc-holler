@@ -8,9 +8,9 @@ on:
         required: true
         type: string
       username:
-        description: "SSH username (e.g. root, ubuntu, kadhir)"
+        description: "SSH username (e.g. ubuntu, root, kadhir)"
         required: true
-        default: "root"
+        default: "ubuntu"
         type: string
       ssh_port:
         description: "SSH port"
@@ -63,18 +63,48 @@ jobs:
 
           $SSH_CMD "$TARGET_USER@$TARGET_HOST" "
             set -e
-            if [ ! -d '$DEPLOY_PATH' ]; then
+
+            if ! command -v docker &> /dev/null || ! docker compose version &> /dev/null; then
+              sudo apt-get update -qq
+              sudo apt-get install -y -qq ca-certificates curl git
+              sudo install -m 0755 -d /etc/apt/keyrings
+              sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc || sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+              sudo chmod a+r /etc/apt/keyrings/docker.asc
+              DISTRO_ID=\$(. /etc/os-release && echo \"\$ID\")
+              DISTRO_CODENAME=\$(. /etc/os-release && echo \"\${UBUNTU_CODENAME:-\$VERSION_CODENAME}\")
+              echo \"deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/\$DISTRO_ID \$DISTRO_CODENAME stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+              sudo apt-get update -qq
+              sudo apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+              sudo usermod -aG docker \$USER || true
+            fi
+
+            sudo mkdir -p '$DEPLOY_PATH'
+            sudo chown -R \$USER:\$USER '$DEPLOY_PATH'
+
+            if [ ! -d '$DEPLOY_PATH/.git' ]; then
+              rm -rf '$DEPLOY_PATH'/*
               git clone https://github.com/kadhir-17/doc-holler.git '$DEPLOY_PATH'
             fi
+
             cd '$DEPLOY_PATH'
             git fetch origin main
             git reset --hard origin/main
+
             if [ -n '$OPENROUTER_KEY' ]; then
               if [ ! -f .env ]; then
                 cp .env.example .env
               fi
-              sed -i \"s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=$OPENROUTER_KEY|\" .env
+              grep -q '^OPENROUTER_API_KEY=' .env && sed -i \"s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=$OPENROUTER_KEY|\" .env || echo \"OPENROUTER_API_KEY=$OPENROUTER_KEY\" >> .env
             fi
-            docker compose down || true
-            docker compose up --build -d
+
+            if docker info &> /dev/null; then
+              DC_CMD='docker compose'
+            else
+              DC_CMD='sudo docker compose'
+            fi
+
+            \$DC_CMD down || true
+            \$DC_CMD up --build -d
+
+            echo 'Deployment complete. Application is running on port 8000.'
           "
