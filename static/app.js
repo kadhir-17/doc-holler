@@ -35,8 +35,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (noDocsWarning) {
       if (hasDocs) {
         noDocsWarning.classList.add("hidden");
+        noDocsWarning.classList.remove("flex");
+        noDocsWarning.style.display = "none";
       } else {
         noDocsWarning.classList.remove("hidden");
+        noDocsWarning.classList.add("flex");
+        noDocsWarning.style.display = "flex";
       }
     }
     if (questionInputEl) {
@@ -50,6 +54,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (sendButtonEl) {
       sendButtonEl.disabled = !hasDocs || isSubmitting;
     }
+    if (chatFormEl) {
+      if (!hasDocs) {
+        chatFormEl.classList.add("opacity-60");
+      } else {
+        chatFormEl.classList.remove("opacity-60");
+      }
+    }
+    document.querySelectorAll(".prompt-suggestion-btn").forEach((btn) => {
+      btn.disabled = !hasDocs;
+      if (!hasDocs) {
+        btn.classList.add("opacity-50", "cursor-not-allowed", "pointer-events-none");
+      } else {
+        btn.classList.remove("opacity-50", "cursor-not-allowed", "pointer-events-none");
+      }
+    });
     if (documentCountBadge) {
       documentCountBadge.textContent = String(indexedDocuments.length);
     }
@@ -245,20 +264,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function appendUserMessage(question) {
-    if (emptyStateEl) emptyStateEl.classList.add("hidden");
+    if (emptyStateEl) {
+      emptyStateEl.classList.add("hidden");
+      emptyStateEl.style.display = "none";
+    }
 
     const messageWrapper = document.createElement("div");
-    messageWrapper.className = "py-4 flex flex-col gap-y-1 text-foreground";
+    messageWrapper.className = "py-3 sm:py-4";
 
-    const bubbleRow = document.createElement("div");
-    bubbleRow.className = "flex justify-end";
+    const container = document.createElement("div");
+    container.className = "max-w-4xl px-4 sm:px-6 lg:px-8 mx-auto flex justify-end gap-x-2 sm:gap-x-4";
+
+    const bubbleWrapper = document.createElement("div");
+    bubbleWrapper.className = "max-w-2xl text-end";
 
     const bubble = document.createElement("div");
-    bubble.className = "text-start bg-surface text-foreground rounded-2xl py-2.5 px-4 max-w-xl text-sm leading-relaxed shadow-xs";
+    bubble.className = "inline-block text-start bg-primary text-primary-foreground rounded-2xl py-2.5 px-4 text-sm leading-relaxed shadow-xs whitespace-pre-wrap";
     bubble.textContent = question;
 
-    bubbleRow.appendChild(bubble);
-    messageWrapper.appendChild(bubbleRow);
+    bubbleWrapper.appendChild(bubble);
+    container.appendChild(bubbleWrapper);
+    messageWrapper.appendChild(container);
     messagesContainerEl.appendChild(messageWrapper);
     messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
   }
@@ -266,10 +292,21 @@ document.addEventListener("DOMContentLoaded", () => {
   function appendLoadingMessage() {
     const loadingWrapper = document.createElement("div");
     loadingWrapper.id = "assistant-loading-bubble";
-    loadingWrapper.className = "py-4 flex flex-col gap-y-2 text-foreground";
+    loadingWrapper.className = "py-3 sm:py-4";
+
+    const container = document.createElement("div");
+    container.className = "max-w-4xl px-4 sm:px-6 lg:px-8 mx-auto flex gap-x-3 sm:gap-x-4";
+
+    const avatar = document.createElement("div");
+    avatar.className = "shrink-0 flex justify-center items-center size-8 sm:size-9 rounded-full bg-primary text-primary-foreground shadow-xs";
+    avatar.innerHTML = `<svg class="size-4 sm:size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"></path>
+      <rect width="18" height="12" x="3" y="8" rx="2"></rect>
+      <path d="M10 13h4"></path>
+    </svg>`;
 
     const contentBox = document.createElement("div");
-    contentBox.className = "flex items-center gap-x-2 text-sm text-muted-foreground-1";
+    contentBox.className = "flex items-center gap-x-2 text-sm text-muted-foreground-1 pt-1.5";
 
     const pulseContainer = document.createElement("div");
     pulseContainer.className = "loading-dots flex items-center gap-x-1";
@@ -286,7 +323,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     contentBox.appendChild(pulseContainer);
     contentBox.appendChild(textSpan);
-    loadingWrapper.appendChild(contentBox);
+
+    container.appendChild(avatar);
+    container.appendChild(contentBox);
+    loadingWrapper.appendChild(container);
     messagesContainerEl.appendChild(loadingWrapper);
     messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
   }
@@ -298,16 +338,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function appendAssistantResponse(data) {
     const messageWrapper = document.createElement("div");
-    messageWrapper.className = "py-4 flex flex-col gap-y-3 text-foreground border-b border-sidebar-line/30 last:border-0";
+    messageWrapper.className = "py-3 sm:py-4 border-b border-sidebar-line/40 last:border-0";
+
+    const container = document.createElement("div");
+    container.className = "max-w-4xl px-4 sm:px-6 lg:px-8 mx-auto flex gap-x-3 sm:gap-x-4";
+
+    const avatar = document.createElement("div");
+    avatar.className = "shrink-0 flex justify-center items-center size-8 sm:size-9 rounded-full bg-primary text-primary-foreground shadow-xs";
+    avatar.innerHTML = `<svg class="size-4 sm:size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"></path>
+      <rect width="18" height="12" x="3" y="8" rx="2"></rect>
+      <path d="M10 13h4"></path>
+      <path d="M7 17v2"></path>
+      <path d="M17 17v2"></path>
+    </svg>`;
+
+    const contentBox = document.createElement("div");
+    contentBox.className = "grow max-w-[90%] md:max-w-3xl w-full space-y-3";
 
     const answerBox = document.createElement("div");
-    answerBox.className = "text-sm leading-relaxed whitespace-pre-wrap text-foreground";
+    answerBox.className = "text-sm leading-relaxed whitespace-pre-wrap text-foreground pt-1";
     answerBox.textContent = data.answer;
-    messageWrapper.appendChild(answerBox);
+    contentBox.appendChild(answerBox);
 
     if (data.answer_found && data.sources && data.sources.length > 0) {
       const sourcesContainer = document.createElement("div");
-      sourcesContainer.className = "mt-2 pt-2 border-t border-line-3/50";
+      sourcesContainer.className = "mt-3 pt-3 border-t border-line-3/50";
 
       const sourcesHeader = document.createElement("div");
       sourcesHeader.className = "flex items-center gap-x-1.5 text-xs font-semibold text-muted-foreground-1 mb-2";
@@ -336,7 +392,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       data.sources.forEach((src) => {
         const card = document.createElement("div");
-        card.className = "source-card flex items-start gap-x-2 p-2 bg-surface rounded-lg border border-line-3 text-xs";
+        card.className = "source-card flex items-start gap-x-2 p-2 bg-layer rounded-lg border border-line-3 text-xs";
 
         const cardIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         cardIcon.setAttribute("class", "shrink-0 size-4 text-muted-foreground-1 mt-0.5");
@@ -371,16 +427,25 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       sourcesContainer.appendChild(sourcesList);
-      messageWrapper.appendChild(sourcesContainer);
+      contentBox.appendChild(sourcesContainer);
     }
 
+    container.appendChild(avatar);
+    container.appendChild(contentBox);
+    messageWrapper.appendChild(container);
     messagesContainerEl.appendChild(messageWrapper);
     messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
   }
 
   function appendErrorMessage(errorText) {
     const errorWrapper = document.createElement("div");
-    errorWrapper.className = "py-3 px-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-x-2";
+    errorWrapper.className = "py-3 sm:py-4";
+
+    const container = document.createElement("div");
+    container.className = "max-w-4xl px-4 sm:px-6 lg:px-8 mx-auto";
+
+    const box = document.createElement("div");
+    box.className = "py-3 px-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-x-2";
 
     const errIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     errIcon.setAttribute("class", "size-4 shrink-0");
@@ -409,8 +474,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const span = document.createElement("span");
     span.textContent = errorText;
 
-    errorWrapper.appendChild(errIcon);
-    errorWrapper.appendChild(span);
+    box.appendChild(errIcon);
+    box.appendChild(span);
+    container.appendChild(box);
+    errorWrapper.appendChild(container);
     messagesContainerEl.appendChild(errorWrapper);
     messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
   }
@@ -473,12 +540,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  if (clearChatBtn) {
-    clearChatBtn.addEventListener("click", () => {
-      if (messagesContainerEl) messagesContainerEl.innerHTML = "";
-      if (emptyStateEl) emptyStateEl.classList.remove("hidden");
+  const clearChatButtons = document.querySelectorAll("#clear-chat-btn, #clear-chat-btn-main");
+  clearChatButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (messagesContainerEl) {
+        messagesContainerEl.innerHTML = "";
+        if (emptyStateEl) {
+          messagesContainerEl.appendChild(emptyStateEl);
+          emptyStateEl.classList.remove("hidden");
+          emptyStateEl.style.display = "";
+        }
+      }
+      updateChatState();
     });
-  }
+  });
 
   document.querySelectorAll(".prompt-suggestion-btn").forEach((btn) => {
     btn.addEventListener("click", () => {

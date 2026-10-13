@@ -20,14 +20,16 @@
   </script>
 </head>
 
-<body class="bg-background text-foreground h-screen overflow-hidden flex flex-col">
+<body class="bg-background text-foreground h-screen overflow-hidden flex flex-row">
 
-  <div id="hs-pro-sidebar" class="hs-overlay [--auto-close:md] hs-overlay-open:translate-x-0 -translate-x-full transition-all duration-300 transform w-80 overflow-hidden hidden fixed inset-y-0 z-60 inset-s-0 bg-sidebar border-e border-sidebar-line md:block md:translate-x-0 md:inset-e-auto md:bottom-0" role="dialog" tabindex="-1" aria-label="Sidebar">
+  <!-- ========== SIDEBAR (VISIBLE AT ALL TIMES) ========== -->
+  <aside id="hs-application-sidebar" class="w-64 min-w-64 max-w-64 h-full shrink-0 flex flex-col bg-sidebar border-e border-sidebar-line z-30" aria-label="Sidebar">
     <div class="relative flex flex-col h-full max-h-full">
+      <!-- Sidebar Header -->
       <header class="py-3 px-4 flex justify-between items-center gap-x-2 border-b border-sidebar-line">
         <div class="flex items-center gap-x-2.5">
-          <span class="flex justify-center items-center size-9 rounded-lg bg-primary text-primary-foreground">
-            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <span class="flex justify-center items-center size-8 rounded-lg bg-primary text-primary-foreground">
+            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
               <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -36,50 +38,47 @@
             </svg>
           </span>
           <div>
-            <h1 class="font-bold text-sm text-foreground">Doc Holler</h1>
-            <p class="text-[11px] text-muted-foreground-1">RAG Document Chat</p>
+            <h1 class="font-bold text-sm text-foreground leading-tight">Doc Holler</h1>
+            <p class="text-[11px] text-muted-foreground-1 leading-tight">RAG Document Chat</p>
           </div>
         </div>
-
-        <button type="button" class="flex md:hidden justify-center items-center size-7 text-muted-foreground-1 hover:bg-muted-hover rounded-lg focus:outline-hidden" data-hs-overlay="#hs-pro-sidebar" aria-label="Close navigation">
-          <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 6 6 18"></path>
-            <path d="m6 6 12 12"></path>
-          </svg>
-        </button>
       </header>
 
+      <!-- Upload Section -->
       <div class="p-3 border-b border-sidebar-line">
         <label for="file-input" class="sr-only">Upload Documents</label>
-        <div id="upload-dropzone" class="p-4 border-2 border-dashed border-sidebar-line hover:border-primary/50 rounded-xl text-center cursor-pointer transition-colors bg-surface/50">
+        <div id="upload-dropzone" class="p-3 border-2 border-dashed border-sidebar-line hover:border-primary/50 rounded-xl text-center cursor-pointer transition-colors bg-surface/50">
           <input id="file-input" type="file" multiple accept=".pdf,.txt,.docx" class="hidden">
-          <div class="flex flex-col items-center gap-y-1.5" onclick="document.getElementById('file-input').click()">
-            <span class="flex justify-center items-center size-8 rounded-full bg-primary/10 text-primary">
-              <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="flex flex-col items-center gap-y-1" onclick="document.getElementById('file-input').click()">
+            <span class="flex justify-center items-center size-7 rounded-full bg-primary/10 text-primary">
+              <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
             </span>
-            <p class="text-xs font-medium text-foreground">Click to upload or drag files</p>
-            <p class="text-[10px] text-muted-foreground-1">PDF, TXT, DOCX (Max 15MB each)</p>
+            <p class="text-xs font-medium text-foreground">Click to upload or drag</p>
+            <p class="text-[10px] text-muted-foreground-1">PDF, TXT, DOCX (Max 15MB)</p>
           </div>
         </div>
         <div id="upload-status" class="hidden mt-2"></div>
       </div>
 
-      <div class="p-3 flex items-center justify-between border-b border-sidebar-line text-xs font-semibold text-muted-foreground-1">
+      <!-- Indexed Documents Header -->
+      <div class="py-2 px-3 flex items-center justify-between border-b border-sidebar-line text-xs font-semibold text-muted-foreground-1">
         <span>Indexed Documents</span>
         <span id="document-count-badge" class="py-0.5 px-2 bg-surface rounded-full text-[11px] font-medium text-foreground">0</span>
       </div>
 
-      <div class="pb-4 px-2 size-full flex flex-col gap-y-1 overflow-y-auto">
+      <!-- Document List -->
+      <div class="pb-4 px-2 size-full flex flex-col gap-y-1 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-none [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
         <ul id="document-list" class="flex flex-col gap-y-1 pt-2">
         </ul>
       </div>
 
-      <div class="p-3 border-t border-sidebar-line flex justify-between items-center text-xs text-muted-foreground-1">
-        <button id="clear-chat-btn" type="button" class="py-1 px-2 hover:bg-muted-hover rounded-lg text-foreground flex items-center gap-x-1.5">
+      <!-- Sidebar Footer -->
+      <div class="p-3 border-t border-sidebar-line flex justify-between items-center text-xs text-muted-foreground-1 mt-auto">
+        <button id="clear-chat-btn" type="button" class="py-1 px-2 hover:bg-muted-hover rounded-lg text-foreground flex items-center gap-x-1.5 focus:outline-hidden transition-colors">
           <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -89,24 +88,20 @@
         <span class="text-[10px]">In-Memory Session</span>
       </div>
     </div>
-  </div>
+  </aside>
+  <!-- ========== END SIDEBAR ========== -->
 
-  <main class="md:ps-80 transition-all duration-300 h-screen flex flex-col overflow-hidden">
-    <header class="flex justify-between items-center px-4 py-2.5 border-b border-sidebar-line bg-background z-20">
-      <div class="flex items-center gap-x-2">
-        <button type="button" class="md:hidden flex justify-center items-center size-8 text-muted-foreground-1 rounded-lg hover:bg-muted-hover focus:outline-hidden" data-hs-overlay="#hs-pro-sidebar" aria-label="Open sidebar">
-          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
+  <!-- ========== MAIN CONTENT ========== -->
+  <main class="relative h-screen flex-1 min-w-0 flex flex-col overflow-hidden bg-background">
+    <!-- Top Header Bar -->
+    <header class="flex justify-between items-center px-4 sm:px-6 lg:px-8 py-2.5 border-b border-sidebar-line bg-background shrink-0 z-20">
+      <div class="flex items-center gap-x-3">
         <span class="font-semibold text-sm text-foreground">Doc Holler</span>
       </div>
 
       <div class="flex items-center gap-x-2">
-        <div class="p-0.5 inline-flex bg-surface rounded-full">
-          <button type="button" class="size-7 flex justify-center items-center text-foreground rounded-full hover:bg-muted-hover" data-hs-theme-click-value="default" aria-label="Light theme">
+        <div class="p-0.5 inline-flex bg-surface rounded-full border border-sidebar-line">
+          <button type="button" class="size-7 flex justify-center items-center text-foreground rounded-full hover:bg-muted-hover focus:outline-hidden transition-colors" data-hs-theme-click-value="default" aria-label="Light theme">
             <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="4"></circle>
               <path d="M12 3v1"></path>
@@ -115,7 +110,7 @@
               <path d="M20 12h1"></path>
             </svg>
           </button>
-          <button type="button" class="size-7 flex justify-center items-center text-foreground rounded-full hover:bg-muted-hover" data-hs-theme-click-value="dark" aria-label="Dark theme">
+          <button type="button" class="size-7 flex justify-center items-center text-foreground rounded-full hover:bg-muted-hover focus:outline-hidden transition-colors" data-hs-theme-click-value="dark" aria-label="Dark theme">
             <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
             </svg>
@@ -124,66 +119,93 @@
       </div>
     </header>
 
-    <div class="flex-1 overflow-y-auto px-4 py-6 sm:px-6 md:px-8 max-w-3xl w-full mx-auto" id="chat-messages">
-      <div id="chat-empty-state" class="py-12 flex flex-col items-center justify-center text-center">
-        <span class="flex justify-center items-center size-14 rounded-2xl bg-primary/10 text-primary mb-4">
-          <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <circle cx="10" cy="13" r="2"></circle>
-            <path d="m21 21-4.35-4.35"></path>
-          </svg>
-        </span>
-        <h2 class="text-xl font-bold text-foreground mb-1">Doc Holler RAG Assistant</h2>
-        <p class="text-sm text-muted-foreground-1 max-w-md mb-6 leading-relaxed">
-          Upload your PDF, TXT, or DOCX documents to query knowledge across them with strict source grounding.
-        </p>
+    <!-- Scrollable Chat Area: FULL WIDTH -->
+    <div class="flex-1 overflow-y-auto w-full [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-none [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb" id="chat-messages">
+      <!-- Empty State -->
+      <div id="chat-empty-state" class="py-12 sm:py-16">
+        <div class="max-w-4xl px-4 sm:px-6 lg:px-8 mx-auto text-center">
+          <span class="inline-flex justify-center items-center size-14 rounded-2xl bg-primary/10 text-primary mb-4 shadow-2xs">
+            <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <circle cx="10" cy="13" r="2"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </span>
+          <h1 class="text-3xl font-bold text-foreground sm:text-4xl">
+            Welcome to Doc Holler
+          </h1>
+          <p class="mt-3 text-muted-foreground-1 max-w-lg mx-auto leading-relaxed">
+            Your AI-powered assistant for querying and analyzing uploaded documents with strict source citations.
+          </p>
 
-        <div id="no-docs-warning" class="mb-6 py-2 px-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs flex items-center gap-x-2">
-          <svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <span>No documents are currently indexed. Upload files in the sidebar to begin.</span>
-        </div>
+          <div id="no-docs-warning" class="hidden mt-6 items-center gap-x-2 py-2 px-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs text-start">
+            <svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <span>No documents indexed yet. Upload PDF, TXT, or DOCX files in the sidebar to begin asking questions.</span>
+          </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-md w-full">
-          <button type="button" class="prompt-suggestion-btn text-start p-2.5 bg-surface hover:bg-muted-hover border border-sidebar-line rounded-xl text-xs text-foreground transition-all">
-            Summarize the key conclusions from the documents
-          </button>
-          <button type="button" class="prompt-suggestion-btn text-start p-2.5 bg-surface hover:bg-muted-hover border border-sidebar-line rounded-xl text-xs text-foreground transition-all">
-            What are the main requirements and constraints?
-          </button>
+          <!-- Suggested prompts -->
+          <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto">
+            <button type="button" class="prompt-suggestion-btn text-start p-3 bg-layer hover:bg-layer-hover border border-layer-line rounded-xl text-xs text-foreground transition-all opacity-50 cursor-not-allowed pointer-events-none" disabled>
+              <span class="font-semibold block text-foreground mb-0.5">Summarize Key Conclusions</span>
+              <span class="text-muted-foreground-1">Get an overview of key takeaways from uploaded docs</span>
+            </button>
+            <button type="button" class="prompt-suggestion-btn text-start p-3 bg-layer hover:bg-layer-hover border border-layer-line rounded-xl text-xs text-foreground transition-all opacity-50 cursor-not-allowed pointer-events-none" disabled>
+              <span class="font-semibold block text-foreground mb-0.5">Requirements &amp; Constraints</span>
+              <span class="text-muted-foreground-1">Extract core specifications, boundaries, and prerequisites</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="p-4 bg-background border-t border-sidebar-line">
-      <div class="max-w-3xl w-full mx-auto">
-        <form id="chat-form" class="bg-surface border border-line-3 rounded-2xl shadow-xs p-2 flex flex-col gap-y-2">
-          <textarea id="question-input" rows="2" class="w-full bg-transparent border-0 resize-none text-sm text-foreground placeholder:text-muted-foreground-1 focus:ring-0 focus:outline-hidden px-2 py-1" placeholder="Upload documents to enable asking questions..." disabled></textarea>
+    <!-- Sticky Bottom Input: FULL WIDTH with inner max-w-4xl -->
+    <div class="sticky bottom-0 z-10 bg-background/90 backdrop-blur-sm border-t border-sidebar-line pt-2 pb-3 sm:pt-4 sm:pb-6 shrink-0">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-2.5">
+          <button id="clear-chat-btn-main" type="button" class="inline-flex justify-center items-center gap-x-2 rounded-lg font-medium text-muted-foreground-1 hover:text-foreground focus:outline-hidden text-xs sm:text-sm transition-colors">
+            <svg class="shrink-0 size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"></path>
+              <path d="M12 5v14"></path>
+            </svg>
+            New chat
+          </button>
+          <span class="text-xs text-muted-foreground-1">In-Memory RAG Session</span>
+        </div>
 
-          <div class="flex justify-between items-center pt-1 border-t border-line-3/50">
-            <div class="flex items-center gap-x-1">
-              <button type="button" onclick="document.getElementById('file-input').click()" class="size-8 flex justify-center items-center text-muted-foreground-1 hover:text-foreground hover:bg-muted-hover rounded-lg focus:outline-hidden" aria-label="Attach documents">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-                </svg>
-              </button>
+        <!-- Preline Style Input Container -->
+        <form id="chat-form" class="relative">
+          <textarea id="question-input" rows="2" class="p-3 sm:p-4 pb-12 sm:pb-12 block w-full bg-layer border border-layer-line rounded-xl sm:text-sm text-foreground placeholder:text-muted-foreground-1 focus:border-primary-focus focus:ring-primary-focus focus:outline-hidden disabled:opacity-50 disabled:pointer-events-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-none [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb" placeholder="Upload documents to enable asking questions..." disabled></textarea>
+
+          <!-- Toolbar -->
+          <div class="absolute bottom-px inset-x-px p-2 rounded-b-xl bg-layer">
+            <div class="flex flex-wrap justify-between items-center gap-2">
+              <div class="flex items-center gap-x-1">
+                <button type="button" onclick="document.getElementById('file-input').click()" class="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-muted-foreground-1 hover:bg-muted-hover focus:outline-hidden transition-colors" title="Attach documents">
+                  <svg class="shrink-0 size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="flex items-center gap-x-1">
+                <button id="send-button" type="submit" class="inline-flex shrink-0 justify-center items-center size-8 rounded-lg bg-primary border border-primary-line text-primary-foreground hover:bg-primary-hover focus:outline-hidden disabled:opacity-50 disabled:pointer-events-none transition-colors" disabled title="Send question">
+                  <svg class="shrink-0 size-3.5" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
-
-            <button id="send-button" type="submit" class="inline-flex justify-center items-center size-8 rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden" disabled aria-label="Send question">
-              <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
-            </button>
           </div>
         </form>
       </div>
     </div>
   </main>
+  <!-- ========== END MAIN CONTENT ========== -->
 
   <script src="/static/assets/vendor/preline/dist/index.js"></script>
   <script src="/static/assets/vendor/clipboard/dist/clipboard.min.js"></script>

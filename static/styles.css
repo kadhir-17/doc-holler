@@ -27,3 +27,35 @@
   border-color: #3b82f6 !important;
   background-color: rgba(59, 130, 246, 0.08) !important;
 }
+
+#chat-messages {
+  scroll-behavior: smooth;
+}
+
+#question-input {
+  field-sizing: content;
+  max-height: 180px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#question-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.chat-disabled-state {
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+#hs-application-sidebar {
+  width: 16rem !important;
+  min-width: 16rem !important;
+  max-width: 16rem !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  transform: none !important;
+}
